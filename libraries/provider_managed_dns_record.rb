@@ -29,9 +29,9 @@ class Chef
 
         def setup_gem
           begin
-            require 'dnsmadeeasyapi-good'
+            require 'dnsmadeeasy-rest-api'
           rescue LoadError
-            error = "dnsmadeeasy: Missing gem 'dnsmadeeasyapi-good'. Use the managed-dns::dnsmadeeasy recipe to install it first."
+            error = "dnsmadeeasy: Missing gem 'dnsmadeeasy-rest-api'. Use the managed-dns::dnsmadeeasy recipe to install it first."
             Chef::Log.error(error)
             raise error
           end
@@ -39,7 +39,7 @@ class Chef
 
         def api
           api_credentials = new_resource.run_context.node['managed_dns']['dnsmadeeasy']['credentials']
-          ::Dnsmadeeasyapi.new(api_credentials['api_key'], api_credentials['secret_key'])
+          ::DnsMadeEasy.new(api_credentials['api_key'], api_credentials['secret_key'])
         end
       end
     end
