@@ -7,4 +7,5 @@ managed_dns_record node['hostname'] do
   a_record node['hostname'].split('.')[0..-2].join(".")
   ttl 60
   action :create
+  not_if { ManagedDNS::Helper.new(node).already_defined? }
 end
