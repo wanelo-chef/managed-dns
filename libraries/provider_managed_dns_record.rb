@@ -4,37 +4,54 @@ class Chef
       class DnsMadeEasy < Chef::Provider
 
         def load_current_resource
-          @current_resource ||= Chef::Resource::ManagedDnsRecord.new(new_resource.name, new_resource.run_context)
+          return unless existing_record
+          @current_resource = Chef::Resource::ManagedDnsRecord.new(new_resource.name, new_resource.run_context).tap do |r|
+            r.domain new_resource.domain
+            r.record_type existing_record['type']
+            r.ipaddress existing_record['value']
+            r.a_record existing_record['name'] if new_resource.record_type == 'A'
+            r.ttl existing_record['ttl']
+          end
         end
 
         def action_create
-          setup_gem
-
-          if exists?
-            Chef::Log.info('dnsmadeeasy: A Name Record already exists')
-          else
+          unless exists?
             Chef::Log.info('dnsmadeeasy: Creating A Name Record')
-            api.create_a_record(new_resource.domain, new_resource.a_record, new_resource.ipaddress, { "ttl" => new_resource.ttl })
+            api.create_a_record(new_resource.domain, new_resource.a_record, new_resource.ipaddress, { 'ttl' => new_resource.ttl })
+            new_resource.updated_by_last_action(true)
+          end
+        end
+
+        def action_update
+          if exists?
+            return unless changed?
+            Chef::Log.info('dnsmadeeasy: Changing A Name Record')
+            api.update_record(new_resource.domain, existing_record['id'], new_resource.a_record, new_resource.record_type, new_resource.ipaddress, { 'ttl' => new_resource.ttl })
+            new_resource.updated_by_last_action(true)
+          else
+            action_create
           end
         end
 
         private
 
         def exists?
-          raise if new_resource.domain.nil?
-          records = api.find_record_id(new_resource.domain, new_resource.a_record, new_resource.record_type)
-          Chef::Log.info("dnsmadeeasy: records: #{records.inspect}")
-          !records.empty?
+          !!current_resource
         end
 
-        def setup_gem
-          begin
-            require 'dnsmadeeasy-rest-api'
-          rescue LoadError
-            error = "dnsmadeeasy: Missing gem 'dnsmadeeasy-rest-api'. Use the managed-dns::dnsmadeeasy recipe to install it first."
-            Chef::Log.error(error)
-            raise error
+        def changed?
+          return false unless current_resource
+          [:domain, :ipaddress, :record_type, :name, :a_record, :ttl].any? do |field|
+            new_resource.send(field) != current_resource.send(field)
           end
+        end
+
+        def existing_record
+          @existing_record ||= domain_records.detect { |r| r['name'] == new_resource.a_record && r['type'] == new_resource.record_type }
+        end
+
+        def domain_records
+          @records ||= api.records_for(new_resource.domain)['data']
         end
 
         def api

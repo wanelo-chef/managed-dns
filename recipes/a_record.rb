@@ -6,6 +6,6 @@ managed_dns_record node['hostname'] do
   ipaddress node['privateaddress']
   a_record node['hostname'].split('.')[0..-2].join(".")
   ttl 60
-  action :create
+  action :update
   not_if { ManagedDNS::Helper.new(node).already_defined? }
 end
