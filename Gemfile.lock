@@ -31,6 +31,7 @@ GEM
     crack (0.4.2)
       safe_yaml (~> 1.0.0)
     diff-lcs (1.2.5)
+    dnsmadeeasy-rest-api (1.0.3)
     erubis (2.7.0)
     hashie (2.1.0)
     highline (1.6.21)
@@ -89,5 +90,6 @@ PLATFORMS
 
 DEPENDENCIES
   chef
+  dnsmadeeasy-rest-api (= 1.0.3)
   rspec
   webmock
