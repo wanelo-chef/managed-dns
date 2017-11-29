@@ -1,5 +1,6 @@
 Managed DNS Cookbook
 ====================
 
-Manage your DNSMadeEasy domains
+This cookbook manages DNS records through DnsMadeEasy provider only.
+
 
