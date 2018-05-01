@@ -1,10 +1,12 @@
 source 'https://www.rubygems.org'
 
 gem 'chef'
+gem 'dnsmadeeasy-rest-api'
 
 group :test do
   gem 'rspec'
   gem 'webmock'
-  gem 'dnsmadeeasy-rest-api', '= 1.0.3'
+  gem "test-kitchen"
+  gem "kitchen-vagrant"
 end
 
